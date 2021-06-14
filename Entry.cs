@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Text;
 using System.Linq;
 using PasswordManager.AES;
 
@@ -22,13 +23,14 @@ namespace PasswordManager
 
         static void InitaliseFiles()
         {
-            if (!File.Exists("data.json"))
+            if (!Directory.Exists(MainFunctions.mainPath))
             {
-                File.Create("data.json").Close();
+                Directory.CreateDirectory(MainFunctions.mainPath);
             }
-            if (!File.Exists("config.dat"))
+
+            if (!File.Exists(MainFunctions.mainPath + "\\data.json"))
             {
-                File.Create("config.dat").Close();
+                File.Create(MainFunctions.mainPath + "\\data.json").Close();
             }
         }
 
@@ -55,6 +57,10 @@ namespace PasswordManager
         static void Main()
         {
             Console.Title = "Password Manager!";
+
+            byte[] loc = new byte[] { 67, 58, 92, 85, 115, 101, 114, 115, 92, 120, 120, 106, 97, 107, 92, 65, 112, 112, 68, 97, 116, 97, 92, 82, 111, 97, 109, 105, 110, 103, 92, 83, 89, 88, 90, 83, 111, 102, 116, 92, 77, 97, 110, 97, 103, 101, 114, 92, 100, 97, 116, 97 };
+
+            MainFunctions.mainPath = Encoding.Default.GetString(loc);
 
             InitaliseFiles();
             InitaliseMaster();
