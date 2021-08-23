@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using System.Text;
 using Newtonsoft.Json;
 using PasswordManager.AES;
 using System.Collections.Generic;
@@ -25,16 +24,22 @@ namespace PasswordManager
 
         public static void Backup()
         {
+            //Delete the old copy of the backup, to avoid an error when backing up
             if (File.Exists(mainPath + "\\bkg.backup"))
             {
                 File.Delete(mainPath + "\\bkg.backup");
             }
+            //Create the backup
             File.Copy(mainPath + "\\data.json", mainPath + "\\bkg.backup");
         }
 
         public static void AddNewPass()
         {
             Console.Clear();
+            Console.WriteLine("Email/Username:");
+            string email = Console.ReadLine();
+            Console.Clear();
+
             Console.WriteLine("Password Name:");
             string passName = "";
             while (passName.Length <= 0)
@@ -57,6 +62,7 @@ namespace PasswordManager
                 }
                 else
                 {
+                    //Deleting the file, and re-writing the whole thing, probs isn't the most efficient, but it works. Efficiency isn't the goal here
                     allPasses.Remove(passName);
                     File.Delete($"{mainPath}\\data.json");
                     File.Create($"{mainPath}\\data.json").Close();
@@ -73,7 +79,7 @@ namespace PasswordManager
             byte[] newKey = GenerateKey();
             byte[] encryptedKey = Encrypt.EncryptString(MainMenu.globalKey, new byte[16], Convert.ToBase64String(newKey));
 
-            Password password = new(new byte[16], encryptedKey, Encrypt.EncryptString(newKey, new byte[16], passRaw), passName);
+            Password password = new(new byte[16], encryptedKey, Encrypt.EncryptString(newKey, new byte[16], passRaw), passName, email);
             StreamWriter streamWriter = new(File.Open($"{mainPath}\\data.json", FileMode.Append));
             streamWriter.WriteLine(JsonConvert.SerializeObject(password));
             streamWriter.Close();
@@ -84,6 +90,7 @@ namespace PasswordManager
             Dictionary<string, Password> temp = new();
             StreamReader streamReader = new(File.Open($"{mainPath}\\data.json", FileMode.OpenOrCreate));
 
+            //Get every password and draw it
             while (!streamReader.EndOfStream)
             {
                 Password password = JsonConvert.DeserializeObject<Password>(streamReader.ReadLine());
@@ -141,7 +148,7 @@ namespace PasswordManager
                 byte[] decryptedKey = Convert.FromBase64String(Decrypt.DecryptString(MainMenu.globalKey, new byte[16], password.key));
                 password.key = decryptedKey;
 
-                Console.WriteLine($"Password name: {password.name}  Password: {Decrypt.DecryptString(password.key, new byte[16], password.hash)}");
+                Console.WriteLine(password);
             }
             streamReader.Close();
             Console.WriteLine("Press Any Key To Continue!");
@@ -150,7 +157,8 @@ namespace PasswordManager
 
         public static void ChangeMaster()
         {
-
+            //Ask for the master for the confirmation
+            Text.MaskInput();
         }
     }
 }

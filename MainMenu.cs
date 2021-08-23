@@ -1,9 +1,6 @@
 ﻿using System;
-using System.IO;
 using System.Text;
-using Newtonsoft.Json;
 using PasswordManager.AES;
-using System.Collections.Generic;
 
 namespace PasswordManager
 {
@@ -13,13 +10,20 @@ namespace PasswordManager
         public byte[] key;
         public byte[] hash;
         public string name;
+        public string email;
 
-        public Password(byte[] iv, byte[] key, byte[] hash, string name)
+        public override string ToString()
+        {
+            return $"Site: {name} Email/Username: {email} Password: {Decrypt.DecryptString(key, new byte[16], hash)}";
+        }
+
+        public Password(byte[] iv, byte[] key, byte[] hash, string name, string email)
         {
             this.iv = iv;
             this.key = key;
             this.hash = hash;
             this.name = name;
+            this.email = email;
         }
     }
 

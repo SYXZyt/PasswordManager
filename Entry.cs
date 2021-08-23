@@ -2,6 +2,7 @@
 using System.IO;
 using System.Text;
 using System.Linq;
+using System.Threading;
 using PasswordManager.AES;
 
 namespace PasswordManager
@@ -9,8 +10,6 @@ namespace PasswordManager
     //C# 9 Required
     //Todo
     //Encrpy global key
-    //Stop view all passwords from crashing, when no passwords exist
-    //Comment some code
 
     class Entry
     {
@@ -65,11 +64,24 @@ namespace PasswordManager
             InitaliseFiles();
             InitaliseMaster();
 
+            //This will count how many incorrect guesses, and then crash when exceeding a threshold
+            byte incorrectCount = 0;
+
             while (true)
             {
                 Console.WriteLine("Please Enter The Master Password:");
                 string input = Text.MaskInput();
                 byte[] inputHashed = Encrypt.EncryptString(MainMenu.globalKey, new byte[16], input);
+
+                //Check incorrect guesses, in the future, lock the program for a set amount of time
+                if (incorrectCount >= 2)
+                {
+                    Console.Clear();
+                    Console.WriteLine("Failed To Enter The Master Password");
+                    Thread.Sleep(1000);
+                    Environment.Exit(0);
+                }
+
 
                 if (CheckArrayEqual(inputHashed, hashCheck))
                 {
@@ -79,6 +91,7 @@ namespace PasswordManager
                 {
                     Console.Clear();
                     Console.WriteLine("Incorrect Password");
+                    incorrectCount++;
                 }
             }
         }
